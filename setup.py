@@ -13,7 +13,7 @@ def main():
     setup(
         name='straitlets',
         version='0.0.1',
-        description="Quantopian Configuration",
+        description="Serializable IPython Traitlets",
         author="Scott Sanderson",
         author_email="ssanderson@quantopian.com",
         packages=[
