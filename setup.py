@@ -11,17 +11,17 @@ def install_requires():
 
 def main():
     setup(
-        name='qconfig',
+        name='straitlets',
         version='0.0.1',
         description="Quantopian Configuration",
         author="Scott Sanderson",
         author_email="ssanderson@quantopian.com",
         packages=[
-            'qconfig',
+            'straitlets',
         ],
         include_package_data=True,
         zip_safe=True,
-        url="https://github.com/quantopian/qconfig",
+        url="https://github.com/quantopian/serializable-traitlets",
         classifiers=[
             'Development Status :: 3 - Alpha',
             'Framework :: IPython',
