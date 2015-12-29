@@ -3,7 +3,12 @@ from sys import version_info
 
 
 def install_requires():
-    requires = ['traitlets>=4.0', 'pytest>=2.8.5', 'six>=1.9.0']
+    requires = [
+        'traitlets>=4.0',
+        'pytest>=2.8.5',
+        'six>=1.9.0',
+        'pyyaml>=3.11',
+    ]
     if (version_info.major, version_info.minor) < (3, 4):
         requires.append('singledispatch>=3.4.0')
     return requires

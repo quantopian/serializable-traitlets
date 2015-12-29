@@ -1,8 +1,8 @@
 from six import iterkeys, itervalues
 from six.moves import zip, map
 
-from qconfig.compat import long, unicode
-from qconfig.dispatch import singledispatch
+from straitlets.compat import long, unicode
+from straitlets.dispatch import singledispatch
 
 
 @singledispatch

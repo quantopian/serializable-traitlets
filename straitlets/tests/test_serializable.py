@@ -6,10 +6,10 @@ from __future__ import unicode_literals
 
 import pytest
 from six import iteritems
-from traitlets.config import Config
+from textwrap import dedent
 
-from qconfig.compat import unicode
-from qconfig.test_utils import multifixture
+from straitlets.compat import unicode
+from straitlets.test_utils import multifixture
 from ..serializable import Serializable
 from ..traits import (
     Bool, Dict, Enum, Float, Instance, Integer, List, Set, Unicode, Tuple,
@@ -77,11 +77,6 @@ def test_construct_from_kwargs(foo_kwargs):
     check_attributes(instance, foo_kwargs)
 
 
-def test_construct_from_config(foo_kwargs):
-    instance = Foo(config=Config({"Foo": foo_kwargs}))
-    check_attributes(instance, foo_kwargs)
-
-
 def _roundtrip_to_dict(traited):
     return type(traited).from_dict(traited.to_dict())
 
@@ -90,10 +85,15 @@ def _roundtrip_to_json(traited):
     return type(traited).from_json(traited.to_json())
 
 
+def _roundtrip_to_yaml(traited):
+    return type(traited).from_yaml(traited.to_yaml())
+
+
 @multifixture
 def roundtrip_func():
     yield _roundtrip_to_dict
     yield _roundtrip_to_json
+    yield _roundtrip_to_yaml
 
 
 def test_roundtrip(foo_kwargs, roundtrip_func):
@@ -246,12 +246,12 @@ def test_double_nested(roundtrip_func):
 
     class Middle(Serializable):
         x = Integer()
-        bottom = Bottom()
+        bottom = Instance(Bottom)
 
     class Top(Serializable):
         x = Unicode()
         y = Tuple()
-        middle = Middle()
+        middle = Instance(Middle)
 
     top = Top(
         x="asdf",
@@ -290,3 +290,93 @@ def test_inheritance(roundtrip_func, foo_instance):
     assert child.x is foo_instance
 
     assert_serializables_equal(roundtrip_func(child), child)
+
+
+def test_barf_on_unexpected_input():
+
+    class MyClass(Serializable):
+        x = Integer()
+        # This should be Instance(Foo).
+        foo = Foo()
+
+    with pytest.raises(TypeError) as e:
+        MyClass(x=1, y=5)
+        assert str(e.value) == (
+            "MyClass.__init__() got unexpected keyword arguments ('y',)."
+        )
+
+    with pytest.raises(TypeError) as e:
+        MyClass(x=1, foo=Foo())
+    assert str(e.value) == (
+        dedent(
+            """
+            MyClass.__init__() got unexpected keyword argument 'foo'.
+            MyClass (or a parent) has a class attribute with the same name.
+            Did you mean to write `foo = Instance(Foo)`?
+            """
+        )
+    )
+
+
+@pytest.fixture
+def foo_yaml():
+    return dedent(
+        """
+        bool_: true
+        float_: 1.0
+        int_: 2
+        unicode_: {not_ascii}
+        enum: {not_ascii}
+        dict_:
+            a: 3
+            b: 4
+            c:
+                - 5
+                - 6
+        list_:
+           - 7
+           - 8
+        set_:
+           - 9
+           - 10
+        tuple_:
+           - 11
+           - 12
+        """
+    ).format(not_ascii=not_ascii)
+
+
+@pytest.fixture
+def foo_yaml_expected_result():
+    return Foo(
+        bool_=True,
+        float_=1.0,
+        int_=2,
+        unicode_=not_ascii,
+        enum=not_ascii,
+        dict_=dict(
+            a=3,
+            b=4,
+            c=[5, 6],
+        ),
+        list_=[7, 8],
+        set_={9, 10},
+        tuple_=(11, 12),
+    )
+
+
+def test_from_yaml(foo_yaml, foo_yaml_expected_result):
+    assert_serializables_equal(
+        Foo.from_yaml(foo_yaml),
+        foo_yaml_expected_result
+    )
+
+
+def test_from_yaml_file(tmpdir, foo_yaml, foo_yaml_expected_result):
+    fileobj = tmpdir.join("test.yaml")
+    fileobj.write_text(foo_yaml, encoding='utf-8')
+
+    assert_serializables_equal(
+        Foo.from_yaml_file(fileobj.strpath),
+        foo_yaml_expected_result,
+    )
