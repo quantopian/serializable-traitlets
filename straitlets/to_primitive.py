@@ -25,6 +25,7 @@ def can_convert_to_primitive(type_):
 @to_primitive.register(long)  # Redundant in PY3, but that's fine.
 @to_primitive.register(float)
 @to_primitive.register(unicode)
+@to_primitive.register(type(None))
 def _atom_to_primitive(a):
     return a
 

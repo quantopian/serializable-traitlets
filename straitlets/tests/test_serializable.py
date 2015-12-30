@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 import pytest
 from six import iteritems
 from textwrap import dedent
-from traitlets import Unicode as base_Unicode
+from traitlets import TraitError, Unicode as base_Unicode
 
 from straitlets.compat import unicode
 from straitlets.test_utils import multifixture
@@ -404,4 +404,33 @@ def test_reject_unknown_object():
 
     assert str(e.value) == (
         "Can't convert instances of SomeRandomClass to primitives."
+    )
+
+
+def test_allow_none(foo_instance, different_foo_instance, roundtrip_func):
+
+    class MyClass(Serializable):
+        required = Instance(Foo)
+        optional = Instance(Foo, allow_none=True)
+
+    with pytest.raises(TraitError):
+        MyClass().required
+
+    without_optional = MyClass(required=foo_instance)
+    assert without_optional.required is foo_instance
+    assert without_optional.optional is None
+    assert_serializables_equal(
+        without_optional,
+        roundtrip_func(without_optional),
+    )
+
+    with_optional = MyClass(
+        required=foo_instance,
+        optional=different_foo_instance,
+    )
+    assert with_optional.required is foo_instance
+    assert with_optional.optional is different_foo_instance
+    assert_serializables_equal(
+        with_optional,
+        roundtrip_func(with_optional),
     )
