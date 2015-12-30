@@ -9,16 +9,14 @@ Adds the following additional behavior:
 """
 import traitlets as tr
 
-from .to_primitive import can_convert_to_primitive, to_primitive
+from .to_primitive import can_convert_to_primitive
 
 
 class SerializableTrait(tr.TraitType):
 
-    # Override IPython's default values with Undefined so that defaults values
-    # must be passed explicitly to trait instances.n
+    # Override IPython's default values with Undefined so that default values
+    # must be passed explicitly to trait instances.
     default_value = tr.Undefined
-    metadata = {"config": True}
-    to_primitive = lambda self, obj: to_primitive(obj)
 
 
 class Integer(SerializableTrait, tr.Integer):
@@ -66,15 +64,17 @@ class Enum(SerializableTrait, tr.Enum):
 
 class Instance(SerializableTrait, tr.Instance):
 
-    def instance_init(self, obj):
-        super(Instance, self).instance_init(obj)
+    def init(self):
+        self._resolve_classes()
         if not can_convert_to_primitive(self.klass):
             raise TypeError(
-                "Can't convert instance of %s to a primitive." % self.klass
+                "Can't convert instances of %s to primitives." % (
+                    self.klass.__name__,
+                )
             )
 
-    def __set__(self, obj, value):
+    def validate(self, obj, value):
         from .serializable import Serializable
         if issubclass(self.klass, Serializable) and isinstance(value, dict):
             value = self.klass.from_dict(value)
-        return super(Instance, self).__set__(obj, value)
+        return super(Instance, self).validate(obj, value)

@@ -20,9 +20,9 @@ class SerializableMeta(MetaHasTraits):
             if isinstance(maybe_trait_instance, TraitType):
                 if not isinstance(maybe_trait_instance, SerializableTrait):
                     raise TypeError(
-                        "Got non-serializable trait {name}={value}".format(
+                        "Got non-serializable trait {name}={type}".format(
                             name=maybe_trait_name,
-                            value=maybe_trait_instance,
+                            type=type(maybe_trait_instance).__name__,
                         )
                     )
 

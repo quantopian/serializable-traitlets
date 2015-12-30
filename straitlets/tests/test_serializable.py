@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 import pytest
 from six import iteritems
 from textwrap import dedent
+from traitlets import Unicode as base_Unicode
 
 from straitlets.compat import unicode
 from straitlets.test_utils import multifixture
@@ -278,6 +279,8 @@ def test_inheritance(roundtrip_func, foo_instance):
 
         b = Unicode()
 
+    check_attributes(Parent(b="b"), {"a": 3, "b": "b"})
+
     class Child(Parent):
         x = Instance(Foo)
         y = Dict()
@@ -301,9 +304,9 @@ def test_barf_on_unexpected_input():
 
     with pytest.raises(TypeError) as e:
         MyClass(x=1, y=5)
-        assert str(e.value) == (
-            "MyClass.__init__() got unexpected keyword arguments ('y',)."
-        )
+    assert str(e.value) == (
+        "MyClass.__init__() got unexpected keyword arguments ('y',)."
+    )
 
     with pytest.raises(TypeError) as e:
         MyClass(x=1, foo=Foo())
@@ -379,4 +382,26 @@ def test_from_yaml_file(tmpdir, foo_yaml, foo_yaml_expected_result):
     assert_serializables_equal(
         Foo.from_yaml_file(fileobj.strpath),
         foo_yaml_expected_result,
+    )
+
+
+def test_reject_non_serializable_traitlet():
+
+    with pytest.raises(TypeError) as e:
+        class F(Serializable):
+            u = base_Unicode()
+    assert str(e.value) == "Got non-serializable trait u=Unicode"
+
+
+def test_reject_unknown_object():
+
+    class SomeRandomClass(object):
+        pass
+
+    with pytest.raises(TypeError) as e:
+        class F(Serializable):
+            i = Instance(SomeRandomClass)
+
+    assert str(e.value) == (
+        "Can't convert instances of SomeRandomClass to primitives."
     )

@@ -5,13 +5,22 @@ from sys import version_info
 def install_requires():
     requires = [
         'traitlets>=4.0',
-        'pytest>=2.8.5',
         'six>=1.9.0',
         'pyyaml>=3.11',
     ]
     if (version_info.major, version_info.minor) < (3, 4):
         requires.append('singledispatch>=3.4.0')
     return requires
+
+
+def extras_require():
+    return {
+        'test': [
+            'pytest>=2.8.5',
+            'pytest-cov>=1.8.1',
+            'pytest-pep8>=1.0.6',
+        ],
+    }
 
 
 def main():
@@ -36,6 +45,7 @@ def main():
             'Programming Language :: Python',
         ],
         install_requires=install_requires(),
+        extras_require=extras_require()
     )
 
 

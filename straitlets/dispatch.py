@@ -2,7 +2,7 @@
 Python <= 3.4 compat for singledispatch.
 """
 from sys import version_info
-if (version_info.major, version_info.minor) < (3, 4):
+if (version_info.major, version_info.minor) < (3, 4):  # pragma: no cover
     from singledispatch import singledispatch
 else:
     from functools import singledispatch

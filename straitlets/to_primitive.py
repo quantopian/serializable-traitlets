@@ -8,8 +8,7 @@ from straitlets.dispatch import singledispatch
 @singledispatch
 def to_primitive(obj):
     raise TypeError(
-        "Don't know how to convert objects of "
-        "type %s to primitives." % type(obj),
+        "Don't know how to instances of %s to primitives." % type(obj).__name__
     )
 
 _base_handler = to_primitive.dispatch(object)
