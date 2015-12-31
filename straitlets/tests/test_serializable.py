@@ -411,14 +411,21 @@ def test_allow_none(foo_instance, different_foo_instance, roundtrip_func):
 
     class MyClass(Serializable):
         required = Instance(Foo)
-        optional = Instance(Foo, allow_none=True)
+        explicit_optional = Instance(Foo, allow_none=True)
+        implicit_optional = Instance(Foo, allow_none=True, default_value=None)
 
     with pytest.raises(TraitError):
         MyClass().required
 
-    without_optional = MyClass(required=foo_instance)
+    with pytest.raises(TraitError):
+        # This should still raise because there's no default value.
+        MyClass().explicit_optional
+
+    assert MyClass().implicit_optional is None
+
+    without_optional = MyClass(required=foo_instance, explicit_optional=None)
     assert without_optional.required is foo_instance
-    assert without_optional.optional is None
+    assert without_optional.explicit_optional is None
     assert_serializables_equal(
         without_optional,
         roundtrip_func(without_optional),
@@ -426,11 +433,26 @@ def test_allow_none(foo_instance, different_foo_instance, roundtrip_func):
 
     with_optional = MyClass(
         required=foo_instance,
-        optional=different_foo_instance,
+        explicit_optional=different_foo_instance,
     )
     assert with_optional.required is foo_instance
-    assert with_optional.optional is different_foo_instance
+    assert with_optional.explicit_optional is different_foo_instance
     assert_serializables_equal(
         with_optional,
         roundtrip_func(with_optional),
     )
+
+
+def test_strict():
+
+    class MyClass(Serializable):
+        x = Integer()
+
+    m = MyClass()
+    with pytest.raises(TraitError):
+        m.x
+
+    with pytest.raises(TraitError):
+        MyClass(strict=True)
+
+    assert MyClass(x=1, strict=True).x == 1

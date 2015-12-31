@@ -78,3 +78,6 @@ class Instance(SerializableTrait, tr.Instance):
         if issubclass(self.klass, Serializable) and isinstance(value, dict):
             value = self.klass.from_dict(value)
         return super(Instance, self).validate(obj, value)
+
+    # Override the base class.
+    make_dynamic_default = None

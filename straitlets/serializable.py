@@ -8,7 +8,7 @@ import yaml
 from traitlets import MetaHasTraits, TraitType, HasTraits
 from six import with_metaclass, iteritems, viewkeys
 
-from .traits import SerializableTrait
+from .traits import SerializableTrait, Bool
 from .to_primitive import to_primitive
 
 
@@ -47,12 +47,22 @@ class Serializable(with_metaclass(SerializableMeta, HasTraits)):
 
     The traitlets set on Serializables must be instances of
     straitlets.traits.SerializableTrait.
+
+    All Serializables have a ``strict`` trait of type Bool() with a default of
+    ``False``.  If ``strict`` is True, we force resolution of all trait_names
+    upon construction.
     """
-    def __init__(self, *args, **metadata):
+    strict = Bool(default_value=False)
+
+    def __init__(self, **metadata):
         unexpected = viewkeys(metadata) - self.trait_names()
         if unexpected:
             raise TypeError(self._unexpected_kwarg_msg(unexpected))
-        super(Serializable, self).__init__(*args, **metadata)
+        super(Serializable, self).__init__(**metadata)
+
+        if self.strict:
+            for name in self.trait_names():
+                getattr(self, name)
 
     @classmethod
     def _unexpected_kwarg_msg(cls, unexpected):
