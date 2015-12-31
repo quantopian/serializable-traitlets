@@ -11,9 +11,18 @@ from traitlets import TraitError, Unicode as base_Unicode
 
 from straitlets.compat import unicode
 from straitlets.test_utils import multifixture
-from ..serializable import Serializable
+from ..serializable import Serializable, StrictSerializable
 from ..traits import (
-    Bool, Dict, Enum, Float, Instance, Integer, List, Set, Unicode, Tuple,
+    Bool,
+    Dict,
+    Enum,
+    Float,
+    Instance,
+    Integer,
+    List,
+    Set,
+    Unicode,
+    Tuple,
 )
 
 
@@ -90,11 +99,16 @@ def _roundtrip_to_yaml(traited):
     return type(traited).from_yaml(traited.to_yaml())
 
 
+def _roundtrip_to_base64(traited):
+    return type(traited).from_base64(traited.to_base64())
+
+
 @multifixture
 def roundtrip_func():
     yield _roundtrip_to_dict
     yield _roundtrip_to_json
     yield _roundtrip_to_yaml
+    yield _roundtrip_to_base64
 
 
 def test_roundtrip(foo_kwargs, roundtrip_func):
@@ -456,3 +470,33 @@ def test_strict():
         MyClass(strict=True)
 
     assert MyClass(x=1, strict=True).x == 1
+
+
+def test_strict_from_dict():
+
+    class MyClass(Serializable):
+        x = Integer()
+
+    m = MyClass.from_dict({})
+    with pytest.raises(TraitError):
+        m.x
+
+    with pytest.raises(TraitError):
+        m = MyClass.from_dict({"strict": True})
+
+    assert MyClass.from_dict({"strict": True, "x": 1}).x == 1
+
+
+def test_strict_serializable():
+
+    class Strict(StrictSerializable):
+        x = Integer()
+
+    with pytest.raises(TraitError):
+        Strict()
+
+    with pytest.raises(TraitError):
+        Strict.from_dict({})
+
+    assert Strict(x=1).x == 1
+    assert Strict(x=1).to_dict() == {"strict": True, "x": 1}

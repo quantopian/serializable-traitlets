@@ -2,12 +2,14 @@
 Defines a Serializable subclass for extended traitlets.
 """
 import json
+import base64
 from textwrap import dedent
 import yaml
 
 from traitlets import MetaHasTraits, TraitType, HasTraits
 from six import with_metaclass, iteritems, viewkeys
 
+from .compat import ensure_bytes, ensure_unicode
 from .traits import SerializableTrait, Bool
 from .to_primitive import to_primitive
 
@@ -120,7 +122,24 @@ class Serializable(with_metaclass(SerializableMeta, HasTraits)):
         with open(path, 'r') as f:
             return cls.from_yaml(f)
 
+    @classmethod
+    def from_base64(cls, s):
+        """
+        Construct from base64-encoded JSON.
+        """
+        return cls.from_json(ensure_unicode(base64.b64decode(s)))
+
+    def to_base64(self):
+        """
+        Construct from base64-encoded JSON.
+        """
+        return base64.b64encode(ensure_bytes(self.to_json(), encoding='utf-8'))
+
 
 @to_primitive.register(Serializable)
 def _serializable_to_primitive(s):
     return s.to_dict()
+
+
+class StrictSerializable(Serializable):
+    strict = Bool(default_value=True)
