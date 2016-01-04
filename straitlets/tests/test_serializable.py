@@ -5,12 +5,15 @@ Tests for serializable.py.
 from __future__ import unicode_literals
 
 import pytest
-from six import iteritems
 from textwrap import dedent
 from traitlets import TraitError, Unicode as base_Unicode
 
 from straitlets.compat import unicode
-from straitlets.test_utils import multifixture
+from straitlets.test_utils import (
+    assert_serializables_equal,
+    check_attributes,
+    multifixture,
+)
 from ..serializable import Serializable, StrictSerializable
 from ..traits import (
     Bool,
@@ -27,24 +30,6 @@ from ..traits import (
 
 
 not_ascii = 'unicodé'
-
-
-def check_attributes(obj, attrs):
-    for key, value in iteritems(attrs):
-        assert getattr(obj, key) == value
-
-
-def assert_serializables_equal(left, right):
-    assert type(left) == type(right)
-    assert set(left.trait_names()) == set(right.trait_names())
-    for name in left.trait_names():
-        left_attr = getattr(left, name)
-        right_attr = getattr(right, name)
-        assert type(left_attr) == type(right_attr)
-        if isinstance(left_attr, Serializable):
-            assert_serializables_equal(left_attr, right_attr)
-        else:
-            assert left_attr == right_attr
 
 
 class Foo(Serializable):
@@ -85,30 +70,6 @@ def foo_kwargs():
 def test_construct_from_kwargs(foo_kwargs):
     instance = Foo(**foo_kwargs)
     check_attributes(instance, foo_kwargs)
-
-
-def _roundtrip_to_dict(traited):
-    return type(traited).from_dict(traited.to_dict())
-
-
-def _roundtrip_to_json(traited):
-    return type(traited).from_json(traited.to_json())
-
-
-def _roundtrip_to_yaml(traited):
-    return type(traited).from_yaml(traited.to_yaml())
-
-
-def _roundtrip_to_base64(traited):
-    return type(traited).from_base64(traited.to_base64())
-
-
-@multifixture
-def roundtrip_func():
-    yield _roundtrip_to_dict
-    yield _roundtrip_to_json
-    yield _roundtrip_to_yaml
-    yield _roundtrip_to_base64
 
 
 def test_roundtrip(foo_kwargs, roundtrip_func):
