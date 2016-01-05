@@ -3,9 +3,11 @@ from six import PY3
 if PY3:  # pragma: no cover
     long = int
     unicode = str
+    from urllib.parse import urlparse
 else:    # pragma: no cover
     long = long
     unicode = unicode
+    from urlparse import urlparse
 
 
 def ensure_bytes(s, encoding='utf-8'):
@@ -22,3 +24,12 @@ def ensure_unicode(s, encoding='utf-8'):
     elif isinstance(s, bytes):
         return s.decode(encoding=encoding)
     raise TypeError("Expected bytes or unicode, got %s." % type(s))
+
+
+__all__ = [
+    'ensure_bytes',
+    'ensure_unicode',
+    'long',
+    'unicode',
+    'urlparse',
+]

@@ -1,6 +1,7 @@
 """
 Built-In Serializables
 """
+from .compat import urlparse
 from .serializable import Serializable
 from .traits import Bool, Integer, List, Unicode
 
@@ -10,19 +11,41 @@ class PostgresConfig(Serializable):
     Configuration for a PostgreSQL connection.
     """
     username = Unicode(help="Username for postgres login")
-    password = Unicode(help="Password for postgres login")
+    password = Unicode(
+        allow_none=True,
+        default_value=None,
+        help="Password for postgres login",
+    )
     hostname = Unicode(help="Postgres server hostname")
-    port = Integer(help="Postgres server port")
+    port = Integer(
+        allow_none=True,
+        default_value=None,
+        help="Postgres server port",
+    )
     database = Unicode(help="Database name")
 
     @property
     def url(self):
-        return "postgres://{username}:{password}@{host}:{port}/{db}".format(
+        return "postgres://{username}{password}@{host}{port}/{db}".format(
             username=self.username,
-            password=self.password,
+            password=':' + self.password if self.password else '',
             host=self.hostname,
-            port=self.port,
+            port=':' + str(self.port) if self.port else '',
             db=self.database,
+        )
+
+    @classmethod
+    def from_url(cls, url):
+        """
+        Construct a PostgresConfig from a URL.
+        """
+        parsed = urlparse(url)
+        return cls(
+            username=parsed.username,
+            password=parsed.password,
+            hostname=parsed.hostname,
+            port=parsed.port,
+            database=parsed.path.lstrip('/'),
         )
 
 

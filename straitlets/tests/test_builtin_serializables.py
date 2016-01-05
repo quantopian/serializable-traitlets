@@ -16,13 +16,19 @@ from ..builtin_models import MongoConfig, PostgresConfig
 
 
 @pytest.fixture
-def pg_kwargs():
+def pg_required_kwargs():
     return {
         'username': 'user',
-        'password': 'pass',
         'hostname': 'localhost',
-        'port': 5432,
         'database': 'db',
+    }
+
+
+@pytest.fixture
+def pg_optional_kwargs():
+    return {
+        'port': 5432,
+        'password': 'password',
     }
 
 
@@ -53,19 +59,38 @@ def mongo_required_kwargs(mongo_hosts_lists):
     }
 
 
-def test_postgres_config(pg_kwargs, roundtrip_func):
-    cfg = PostgresConfig(**pg_kwargs)
-    check_attributes(cfg, pg_kwargs)
-    assert cfg.url == "postgres://user:pass@localhost:5432/db"
+def test_postgres_config_required(pg_required_kwargs, roundtrip_func):
+    cfg = PostgresConfig(**pg_required_kwargs)
+    check_attributes(
+        cfg,
+        merge(pg_required_kwargs, {'port': None, 'password': None}),
+    )
+    assert cfg.url == "postgres://user@localhost/db"
+    rounded = roundtrip_func(cfg)
+    assert_serializables_equal(cfg, rounded)
+    assert rounded.url == cfg.url
+
+    assert_serializables_equal(cfg, PostgresConfig.from_url(cfg.url))
+
+
+def test_postgres_config_optional(pg_required_kwargs,
+                                  pg_optional_kwargs,
+                                  roundtrip_func):
+    kwargs = merge(pg_required_kwargs, pg_optional_kwargs)
+    cfg = PostgresConfig(**kwargs)
+    check_attributes(cfg, kwargs)
+    assert cfg.url == "postgres://user:password@localhost:5432/db"
 
     rounded = roundtrip_func(cfg)
     assert_serializables_equal(cfg, rounded)
-    assert rounded.url == "postgres://user:pass@localhost:5432/db"
+    assert rounded.url == cfg.url
+
+    assert_serializables_equal(cfg, PostgresConfig.from_url(cfg.url))
 
 
-def test_all_pg_kwargs_required(pg_kwargs):
+def test_all_pg_kwargs_required(pg_required_kwargs):
 
-    kwargs = pg_kwargs.copy()
+    kwargs = pg_required_kwargs.copy()
     for key in kwargs:
         with removed_key(kwargs, key), pytest.raises(TraitError) as e:
             PostgresConfig(strict=True, **kwargs)
