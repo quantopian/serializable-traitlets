@@ -58,7 +58,7 @@ class PostgresConfig(Serializable):
 
     @property
     def url(self):
-        return "postgres://{netloc}/{db}".format(
+        return "postgresql://{netloc}/{db}".format(
             netloc=self.netloc,
             db=self.database,
         )
