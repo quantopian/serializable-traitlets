@@ -42,9 +42,11 @@ def assert_serializables_equal(left, right):
 
 
 @contextmanager
-def removed_key(dict_, key):
-    value = dict_.pop(key)
+def removed_keys(dict_, keys):
+    popped = {}
+    for key in keys:
+        popped[key] = dict_.pop(key)
     try:
         yield
     finally:
-        dict_[key] = value
+        dict_.update(popped)

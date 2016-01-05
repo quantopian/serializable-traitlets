@@ -9,7 +9,7 @@ from straitlets.test_utils import (
     assert_serializables_equal,
     check_attributes,
     multifixture,
-    removed_key,
+    removed_keys,
 )
 
 from ..builtin_models import MongoConfig, PostgresConfig
@@ -51,7 +51,7 @@ def mongo_optional_kwargs():
 @pytest.fixture
 def mongo_required_kwargs(mongo_hosts_lists):
     return {
-        'username': 'user ',
+        'username': 'user',
         'password': 'pass',
         'port': 666,
         'hosts': mongo_hosts_lists,
@@ -92,7 +92,7 @@ def test_all_pg_kwargs_required(pg_required_kwargs):
 
     kwargs = pg_required_kwargs.copy()
     for key in kwargs:
-        with removed_key(kwargs, key), pytest.raises(TraitError) as e:
+        with removed_keys(kwargs, [key]), pytest.raises(TraitError) as e:
             PostgresConfig(strict=True, **kwargs)
         assert str(e.value).startswith('No default value found for %s' % key)
 
@@ -125,3 +125,24 @@ def test_mongo_config(mongo_required_kwargs,
     with_optionals = MongoConfig(**full_kwargs)
     check_attributes(with_optionals, full_kwargs)
     assert_serializables_equal(with_optionals, roundtrip_func(with_optionals))
+
+
+def test_mongo_config_username_password_both_or_neither(mongo_required_kwargs):
+
+    kwargs = mongo_required_kwargs.copy()
+
+    with removed_keys(kwargs, ['username']), pytest.raises(TraitError) as e:
+        MongoConfig(strict=True, **kwargs)
+    assert str(e.value) == "Password supplied without username."
+
+    with removed_keys(kwargs, ['password']), pytest.raises(TraitError) as e:
+        MongoConfig(strict=True, **kwargs)
+    assert str(e.value) == "Username 'user' supplied without password."
+
+    with removed_keys(kwargs, ['username', 'password']):
+        cfg = MongoConfig(strict=True, **kwargs)
+
+        check_attributes(
+            cfg,
+            merge(kwargs, {'username': None, 'password': None}),
+        )

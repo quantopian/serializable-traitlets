@@ -1,6 +1,8 @@
 """
 Built-In Serializables
 """
+from traitlets import TraitError
+
 from .compat import urlparse
 from .serializable import Serializable
 from .traits import Bool, Integer, List, Unicode
@@ -53,8 +55,31 @@ class MongoConfig(Serializable):
     """
     Configuration for a MongoDB connection.
     """
-    username = Unicode(help="Username for Database Authentication")
-    password = Unicode(help="Password for Database Authentication")
+    username = Unicode(
+        allow_none=True,
+        default_value=None,
+        help="Username for Database Authentication",
+    )
+
+    def _username_changed(self, name, old, new):
+        # Must supply both or neither.
+        if new and not self.password:
+            raise TraitError("Username '%s' supplied without password." % new)
+        return new
+
+    password = Unicode(
+        allow_none=True,
+        default_value=None,
+        help="Password for Database Authentication",
+    )
+
+    def _password_changed(self, name, old, new):
+        # Must supply both or neither.
+        if new and not self.username:
+            # Intentionally not printing a password here.
+            raise TraitError("Password supplied without username.")
+        return new
+
     hosts = List(
         Unicode,
         minlen=1,
