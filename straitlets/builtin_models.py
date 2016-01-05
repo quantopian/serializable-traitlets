@@ -8,6 +8,20 @@ from .serializable import Serializable
 from .traits import Bool, Integer, List, Unicode
 
 
+def join_filter_empty(sep, *elems):
+    """
+    Join a sequence of elements by ``sep``, filtering out empty elements.
+
+    Example
+    -------
+    >>> join_if_second_nonempty(':', 'a', None, 'c')
+    'a:c'
+    >>> join_if_second_nonempty(':', 'a', None)
+    'a'
+    """
+    return sep.join(map(str, filter(bool, elems)))
+
+
 class PostgresConfig(Serializable):
     """
     Configuration for a PostgreSQL connection.
@@ -18,21 +32,34 @@ class PostgresConfig(Serializable):
         default_value=None,
         help="Password for postgres login",
     )
-    hostname = Unicode(help="Postgres server hostname")
+    hostname = Unicode(
+        allow_none=True,
+        default_value=None,
+        help="Postgres server hostname",
+    )
     port = Integer(
         allow_none=True,
         default_value=None,
         help="Postgres server port",
     )
+
+    def _port_changed(self, name, old, new):
+        if new and not self.hostname:
+            raise TraitError("Received port %s but no hostname." % new)
+        return new
+
     database = Unicode(help="Database name")
 
     @property
+    def netloc(self):
+        user_pass = join_filter_empty(':', self.username, self.password)
+        host_port = join_filter_empty(':', self.hostname, self.port)
+        return '@'.join([user_pass, host_port])
+
+    @property
     def url(self):
-        return "postgres://{username}{password}@{host}{port}/{db}".format(
-            username=self.username,
-            password=':' + self.password if self.password else '',
-            host=self.hostname,
-            port=':' + str(self.port) if self.port else '',
+        return "postgres://{netloc}/{db}".format(
+            netloc=self.netloc,
             db=self.database,
         )
 

@@ -19,7 +19,6 @@ from ..builtin_models import MongoConfig, PostgresConfig
 def pg_required_kwargs():
     return {
         'username': 'user',
-        'hostname': 'localhost',
         'database': 'db',
     }
 
@@ -27,6 +26,7 @@ def pg_required_kwargs():
 @pytest.fixture
 def pg_optional_kwargs():
     return {
+        'hostname': 'localhost',
         'port': 5432,
         'password': 'password',
     }
@@ -65,7 +65,7 @@ def test_postgres_config_required(pg_required_kwargs, roundtrip_func):
         cfg,
         merge(pg_required_kwargs, {'port': None, 'password': None}),
     )
-    assert cfg.url == "postgres://user@localhost/db"
+    assert cfg.url == "postgres://user@/db"
     rounded = roundtrip_func(cfg)
     assert_serializables_equal(cfg, rounded)
     assert rounded.url == cfg.url
@@ -95,6 +95,26 @@ def test_all_pg_kwargs_required(pg_required_kwargs):
         with removed_keys(kwargs, [key]), pytest.raises(TraitError) as e:
             PostgresConfig(strict=True, **kwargs)
         assert str(e.value).startswith('No default value found for %s' % key)
+
+
+def test_pg_port_requires_hostname(pg_required_kwargs):
+
+    # Hostname without port is ok.
+    cfg = PostgresConfig(
+        strict=True,
+        hostname='localhost',
+        **pg_required_kwargs
+    )
+    check_attributes(
+        cfg,
+        merge(pg_required_kwargs, {'hostname': 'localhost'})
+    )
+    assert cfg.url == "postgres://user@localhost/db"
+
+    # Port without hostname is an error.
+    with pytest.raises(TraitError) as e:
+        PostgresConfig(strict=True, port=5432, **pg_required_kwargs)
+    assert str(e.value) == "Received port 5432 but no hostname."
 
 
 def test_mongo_config(mongo_required_kwargs,
