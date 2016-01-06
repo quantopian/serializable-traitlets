@@ -65,7 +65,7 @@ def test_postgres_config_required(pg_required_kwargs, roundtrip_func):
         cfg,
         merge(pg_required_kwargs, {'port': None, 'password': None}),
     )
-    assert cfg.url == "postgres://user@/db"
+    assert cfg.url == "postgresql://user@/db"
     rounded = roundtrip_func(cfg)
     assert_serializables_equal(cfg, rounded)
     assert rounded.url == cfg.url
@@ -79,7 +79,7 @@ def test_postgres_config_optional(pg_required_kwargs,
     kwargs = merge(pg_required_kwargs, pg_optional_kwargs)
     cfg = PostgresConfig(**kwargs)
     check_attributes(cfg, kwargs)
-    assert cfg.url == "postgres://user:password@localhost:5432/db"
+    assert cfg.url == "postgresql://user:password@localhost:5432/db"
 
     rounded = roundtrip_func(cfg)
     assert_serializables_equal(cfg, rounded)
@@ -109,7 +109,7 @@ def test_pg_port_requires_hostname(pg_required_kwargs):
         cfg,
         merge(pg_required_kwargs, {'hostname': 'localhost'})
     )
-    assert cfg.url == "postgres://user@localhost/db"
+    assert cfg.url == "postgresql://user@localhost/db"
 
     # Port without hostname is an error.
     with pytest.raises(TraitError) as e:
@@ -128,7 +128,7 @@ def test_mongo_config(mongo_required_kwargs,
         'replicaset': None,
         'slave_ok': True,
         'prefer_secondary': True,
-        'ssl': True,
+        'ssl': False,
     }
 
     without_optionals = MongoConfig(**mongo_required_kwargs)

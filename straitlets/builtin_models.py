@@ -129,4 +129,4 @@ class MongoConfig(Serializable):
         default_value=True,
         help="Prefer to connect to non-primary?",
     )
-    ssl = Bool(default_value=True, help="Connect via SSL?")
+    ssl = Bool(default_value=False, help="Connect via SSL?")
