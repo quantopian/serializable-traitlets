@@ -16,6 +16,7 @@ def install_requires():
 def extras_require():
     return {
         'test': [
+            'tox',
             'pytest>=2.8.5',
             'pytest-cov>=1.8.1',
             'pytest-pep8>=1.0.6',
