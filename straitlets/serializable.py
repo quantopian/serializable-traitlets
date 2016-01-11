@@ -160,7 +160,9 @@ class Serializable(with_metaclass(SerializableMeta, HasTraits)):
         environ : dict-like
             Dict-like object (e.g. os.environ) into which to write ``self``.
         """
-        environ[type(self).__name__] = self.to_base64()
+        environ[ensure_unicode(type(self).__name__)] = (
+            ensure_unicode(self.to_base64())
+        )
 
 
 @to_primitive.register(Serializable)
