@@ -63,8 +63,11 @@ class Serializable(with_metaclass(SerializableMeta, HasTraits)):
         super(Serializable, self).__init__(**metadata)
 
         if self.strict:
-            for name in self.trait_names():
-                getattr(self, name)
+            self.validate_all_attributes()
+
+    def validate_all_attributes(self):
+        for name in self.trait_names():
+            getattr(self, name)
 
     @classmethod
     def _unexpected_kwarg_msg(cls, unexpected):

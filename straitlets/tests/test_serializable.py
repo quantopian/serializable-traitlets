@@ -433,6 +433,21 @@ def test_strict():
     assert MyClass(x=1, strict=True).x == 1
 
 
+def test_validate_all_attributes():
+
+    class MyClass(Serializable):
+        x = Integer()
+
+    m = MyClass()
+    with pytest.raises(TraitError) as validate_err:
+        m.validate_all_attributes()
+
+    with pytest.raises(TraitError) as touch_err:
+        m.x
+
+    assert str(validate_err) == str(touch_err)
+
+
 def test_strict_from_dict():
 
     class MyClass(Serializable):
