@@ -135,6 +135,30 @@ class Serializable(with_metaclass(SerializableMeta, HasTraits)):
         """
         return base64.b64encode(ensure_bytes(self.to_json(), encoding='utf-8'))
 
+    @classmethod
+    def from_environ(cls, environ):
+        """
+        Deserialize an instance that was written to the environment via
+        ``to_environ``.
+
+        Parameters
+        ----------
+        environ : dict-like
+            Dict-like object (e.g. os.environ) from which to read ``self``.
+        """
+        return cls.from_base64(environ[cls.__name__])
+
+    def to_environ(self, environ):
+        """
+        Serialize and write self to environ[self._envvar].
+
+        Parameters
+        ----------
+        environ : dict-like
+            Dict-like object (e.g. os.environ) into which to write ``self``.
+        """
+        environ[type(self).__name__] = self.to_base64()
+
 
 @to_primitive.register(Serializable)
 def _serializable_to_primitive(s):

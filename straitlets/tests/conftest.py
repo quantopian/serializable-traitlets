@@ -17,9 +17,16 @@ def _roundtrip_to_base64(traited):
     return type(traited).from_base64(traited.to_base64())
 
 
+def _roundtrip_to_environ(traited):
+    environ = {}
+    traited.to_environ(environ)
+    return type(traited).from_environ(environ)
+
+
 @multifixture
 def roundtrip_func():
     yield _roundtrip_to_dict
     yield _roundtrip_to_json
     yield _roundtrip_to_yaml
     yield _roundtrip_to_base64
+    yield _roundtrip_to_environ
