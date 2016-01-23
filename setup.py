@@ -4,7 +4,7 @@ from sys import version_info
 
 def install_requires():
     requires = [
-        'traitlets>=4.0',
+        'traitlets>=4.1',
         'six>=1.9.0',
         'pyyaml>=3.11',
     ]
