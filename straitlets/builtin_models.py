@@ -1,7 +1,7 @@
 """
 Built-In Serializables
 """
-from traitlets import TraitError
+from traitlets import TraitError, validate
 
 from .compat import urlparse
 from .serializable import Serializable
@@ -43,10 +43,12 @@ class PostgresConfig(Serializable):
         help="Postgres server port",
     )
 
-    def _port_changed(self, name, old, new):
-        if new and not self.hostname:
-            raise TraitError("Received port %s but no hostname." % new)
-        return new
+    @validate('port')
+    def _port_requires_hostname(self, proposal):
+        value = proposal['value']
+        if value is not None and self.hostname is None:
+            raise TraitError("Received port %s but no hostname." % value)
+        return value
 
     database = Unicode(help="Database name")
 
@@ -88,20 +90,24 @@ class MongoConfig(Serializable):
         help="Username for Database Authentication",
     )
 
-    def _username_changed(self, name, old, new):
-        # Must supply both or neither.
-        if new and not self.password:
-            raise TraitError("Username '%s' supplied without password." % new)
-        return new
-
     password = Unicode(
         allow_none=True,
         default_value=None,
         help="Password for Database Authentication",
     )
 
-    def _password_changed(self, name, old, new):
+    @validate('username')
+    def _user_requires_password(self, proposal):
+        new = proposal['value']
         # Must supply both or neither.
+        if new and not self.password:
+            raise TraitError("Username '%s' supplied without password." % new)
+        return new
+
+    @validate('password')
+    def _password_requires_user(self, proposal):
+        # Must supply both or neither.
+        new = proposal['value']
         if new and not self.username:
             # Intentionally not printing a password here.
             raise TraitError("Password supplied without username.")
