@@ -6,7 +6,13 @@ import base64
 from textwrap import dedent
 import yaml
 
-from traitlets import MetaHasTraits, TraitType, HasTraits
+from traitlets import (
+    HasTraits,
+    MetaHasTraits,
+    TraitError,
+    TraitType,
+    Undefined,
+)
 from six import with_metaclass, iteritems, viewkeys
 
 from .compat import ensure_bytes, ensure_unicode
@@ -96,6 +102,44 @@ class Serializable(with_metaclass(SerializableMeta, HasTraits)):
             )
         )
 
+    @classmethod
+    def example_instance(cls):
+        """
+        Generate an example instance of a Serializable subclass.
+
+        If traits have been tagged with an `example` value, then we use that
+        value.  Otherwise we fall back the default_value for the instance.
+        """
+        kwargs = {}
+        for name, trait in iteritems(cls.class_traits()):
+            value = trait.example_value
+            if value is Undefined:
+                continue
+            kwargs[name] = value
+
+        return cls(**kwargs)
+
+    @classmethod
+    def example_yaml(cls):
+        """
+        Generate an example yaml string for a Serializable subclass.
+
+        If traits have been tagged with an `example` value, then we use that
+        value.  Otherwise we fall back the default_value for the instance.
+        """
+        return cls.example_instance().to_yaml()
+
+    @classmethod
+    def write_example_yaml(cls, dest):
+        """
+        Write a file containing an example yaml string for a Serializable
+        subclass.
+        """
+        # Make sure we can make an instance before we open a file.
+        inst = cls.example_instance()
+        with open(dest, 'w') as f:
+            inst.to_yaml(stream=f)
+
     def to_dict(self):
         out_dict = {}
         for key in self.trait_names():
@@ -113,8 +157,12 @@ class Serializable(with_metaclass(SerializableMeta, HasTraits)):
     def from_json(cls, s):
         return cls.from_dict(json.loads(s))
 
-    def to_yaml(self):
-        return yaml.safe_dump(self.to_dict())
+    def to_yaml(self, stream=None):
+        return yaml.safe_dump(
+            self.to_dict(),
+            stream=stream,
+            default_flow_style=False,
+        )
 
     @classmethod
     def from_yaml(cls, stream):

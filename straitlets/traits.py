@@ -18,6 +18,21 @@ class SerializableTrait(tr.TraitType):
     # must be passed explicitly to trait instances.
     default_value = tr.Undefined
 
+    def example(self, value):
+        return self.tag(example=value)
+
+    def instance_init(self, obj):
+        super(SerializableTrait, self).instance_init(obj)
+        # If we were tagged with an example, make sure it's actually a valid
+        # example.
+        example = self.example_value
+        if example is not tr.Undefined:
+            self._validate(obj, example)
+
+    @property
+    def example_value(self):
+        return self.metadata.get('example', self.default_value)
+
 
 class Integer(SerializableTrait, tr.Integer):
     pass
@@ -72,12 +87,25 @@ class Instance(SerializableTrait, tr.Instance):
                     self.klass.__name__,
                 )
             )
+        super(Instance, self).init()
 
     def validate(self, obj, value):
         from .serializable import Serializable
         if issubclass(self.klass, Serializable) and isinstance(value, dict):
             value = self.klass.from_dict(value)
         return super(Instance, self).validate(obj, value)
+
+    @property
+    def example_value(self):
+        """
+        If we're an instance of a Serializable, fall back to its
+        `example_instance()` method.
+        """
+        from .serializable import Serializable
+        inst = self.metadata.get('example', self.default_value)
+        if inst is tr.Undefined and issubclass(self.klass, Serializable):
+            return self.klass.example_instance()
+        return inst
 
     # Override the base class.
     make_dynamic_default = None
