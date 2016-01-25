@@ -25,7 +25,8 @@ class SerializableTrait(tr.TraitType):
         super(SerializableTrait, self).instance_init(obj)
         # If we were tagged with an example, make sure it's actually a valid
         # example.
-        example = self.example_value
+        self.metadata.setdefault('example', self.default_value)
+        example = self.metadata['example']
         if example is not tr.Undefined:
             self._validate(obj, example)
 
@@ -102,7 +103,7 @@ class Instance(SerializableTrait, tr.Instance):
         `example_instance()` method.
         """
         from .serializable import Serializable
-        inst = self.metadata.get('example', self.default_value)
+        inst = self.metadata['example']
         if inst is tr.Undefined and issubclass(self.klass, Serializable):
             return self.klass.example_instance()
         return inst
