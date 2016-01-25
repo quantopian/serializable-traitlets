@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 from sys import version_info
 
 
@@ -27,13 +27,11 @@ def extras_require():
 def main():
     setup(
         name='straitlets',
-        version='0.0.1',
+        version='0.1.0',
         description="Serializable IPython Traitlets",
         author="Scott Sanderson",
         author_email="ssanderson@quantopian.com",
-        packages=[
-            'straitlets',
-        ],
+        packages=find_packages(include='straitlets.*'),
         include_package_data=True,
         zip_safe=True,
         url="https://github.com/quantopian/serializable-traitlets",
