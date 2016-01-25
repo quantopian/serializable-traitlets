@@ -3,7 +3,9 @@ Tests for example generation.
 """
 from __future__ import unicode_literals
 from textwrap import dedent
+
 import pytest
+from yaml import safe_load
 
 from straitlets.serializable import Serializable
 from straitlets.test_utils import assert_serializables_equal
@@ -148,3 +150,21 @@ def test_nested_example():
     )
 
     assert_serializables_equal(expected, A.example_instance())
+
+
+def test_readme_example():
+
+    class Point(Serializable):
+        x = Integer().example(0)
+        y = Integer().example(0)
+
+    class Vector(Serializable):
+        head = Instance(Point)
+        tail = Instance(Point).example(Point(x=1, y=3))
+
+    example_yaml = Vector.example_instance().to_yaml()
+    expected = {
+        "head": {"x": 0, "y": 0},
+        "tail": {"x": 1, "y": 3},
+    }
+    assert safe_load(example_yaml) == expected
