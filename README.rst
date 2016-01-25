@@ -84,6 +84,6 @@ Example Usage
    #   x: 1
    #   y: 3
 
-.. _`IPython Traitlets` : traitlets.readthedocs.org
+.. _`IPython Traitlets` : http://traitlets.readthedocs.org
 .. _`dynamic default generators` : http://traitlets.readthedocs.org/en/stable/using_traitlets.html#dynamic-default-values
 .. _`attribute cross-validation` : http://traitlets.readthedocs.org/en/stable/using_traitlets.html#callbacks-when-trait-attributes-change
