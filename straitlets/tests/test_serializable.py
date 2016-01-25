@@ -418,7 +418,7 @@ def test_allow_none(foo_instance, different_foo_instance, roundtrip_func):
     )
 
 
-def test_strict():
+def test_lazy_attribute_access():
 
     class MyClass(Serializable):
         x = Integer()
@@ -427,10 +427,7 @@ def test_strict():
     with pytest.raises(TraitError):
         m.x
 
-    with pytest.raises(TraitError):
-        MyClass(strict=True)
-
-    assert MyClass(x=1, strict=True).x == 1
+    assert MyClass(x=1).x == 1
 
 
 def test_validate_all_attributes():
@@ -448,21 +445,6 @@ def test_validate_all_attributes():
     assert str(validate_err) == str(touch_err)
 
 
-def test_strict_from_dict():
-
-    class MyClass(Serializable):
-        x = Integer()
-
-    m = MyClass.from_dict({})
-    with pytest.raises(TraitError):
-        m.x
-
-    with pytest.raises(TraitError):
-        m = MyClass.from_dict({"strict": True})
-
-    assert MyClass.from_dict({"strict": True, "x": 1}).x == 1
-
-
 def test_strict_serializable():
 
     class Strict(StrictSerializable):
@@ -475,4 +457,4 @@ def test_strict_serializable():
         Strict.from_dict({})
 
     assert Strict(x=1).x == 1
-    assert Strict(x=1).to_dict() == {"strict": True, "x": 1}
+    assert Strict(x=1).to_dict() == {"x": 1}

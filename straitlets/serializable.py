@@ -9,14 +9,13 @@ import yaml
 from traitlets import (
     HasTraits,
     MetaHasTraits,
-    TraitError,
     TraitType,
     Undefined,
 )
 from six import with_metaclass, iteritems, viewkeys
 
 from .compat import ensure_bytes, ensure_unicode
-from .traits import SerializableTrait, Bool
+from .traits import SerializableTrait
 from .to_primitive import to_primitive
 
 
@@ -55,12 +54,7 @@ class Serializable(with_metaclass(SerializableMeta, HasTraits)):
 
     The traitlets set on Serializables must be instances of
     straitlets.traits.SerializableTrait.
-
-    All Serializables have a ``strict`` trait of type Bool() with a default of
-    ``False``.  If ``strict`` is True, we force resolution of all trait_names
-    upon construction.
     """
-    strict = Bool(default_value=False)
 
     def __init__(self, **metadata):
         unexpected = viewkeys(metadata) - self.trait_names()
@@ -68,10 +62,21 @@ class Serializable(with_metaclass(SerializableMeta, HasTraits)):
             raise TypeError(self._unexpected_kwarg_msg(unexpected))
         super(Serializable, self).__init__(**metadata)
 
-        if self.strict:
-            self.validate_all_attributes()
-
     def validate_all_attributes(self):
+        """
+        Force validation of all traits.
+
+        Useful for circumstances where an attribute won't be accessed until
+        well after construction, but we want to fail eagerly if that attribute
+        is passed incorrectly.
+
+        Consider using ``StrictSerializable`` for classes where you always want
+        this called on construction.
+
+        See Also
+        --------
+        StrictSerializable
+        """
         for name in self.trait_names():
             getattr(self, name)
 
@@ -143,6 +148,7 @@ class Serializable(with_metaclass(SerializableMeta, HasTraits)):
     def to_dict(self):
         out_dict = {}
         for key in self.trait_names():
+            # Don't serialize the `strict` traitlet.
             out_dict[key] = to_primitive(getattr(self, key))
         return out_dict
 
@@ -219,4 +225,14 @@ def _serializable_to_primitive(s):
 
 
 class StrictSerializable(Serializable):
-    strict = Bool(default_value=True)
+    """
+    Serializable subclass that eagerly evaluates traited attributes after
+    construction.
+
+    Useful in circumstances where you want to fail as early as possible when an
+    object is malformed.
+    """
+
+    def __init__(self, **metadata):
+        super(Serializable, self).__init__(**metadata)
+        self.validate_all_attributes()

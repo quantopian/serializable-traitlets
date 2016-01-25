@@ -93,18 +93,14 @@ def test_all_pg_kwargs_required(pg_required_kwargs):
     kwargs = pg_required_kwargs.copy()
     for key in kwargs:
         with removed_keys(kwargs, [key]), pytest.raises(TraitError) as e:
-            PostgresConfig(strict=True, **kwargs)
+            PostgresConfig(**kwargs).validate_all_attributes
         assert str(e.value).startswith('No default value found for %s' % key)
 
 
 def test_pg_port_requires_hostname(pg_required_kwargs):
 
     # Hostname without port is ok.
-    cfg = PostgresConfig(
-        strict=True,
-        hostname='localhost',
-        **pg_required_kwargs
-    )
+    cfg = PostgresConfig(hostname='localhost', **pg_required_kwargs)
     check_attributes(
         cfg,
         merge(pg_required_kwargs, {'hostname': 'localhost'})
@@ -113,7 +109,7 @@ def test_pg_port_requires_hostname(pg_required_kwargs):
 
     # Port without hostname is an error.
     with pytest.raises(TraitError) as e:
-        PostgresConfig(strict=True, port=5432, **pg_required_kwargs)
+        PostgresConfig(port=5432, **pg_required_kwargs)
     assert str(e.value) == "Received port 5432 but no hostname."
 
 
@@ -122,7 +118,7 @@ def test_mongo_config(mongo_required_kwargs,
                       roundtrip_func):
 
     with pytest.raises(TraitError):
-        MongoConfig(strict=True, **mongo_optional_kwargs)
+        MongoConfig(**mongo_optional_kwargs)
 
     optional_kwarg_defaults = {
         'replicaset': None,
@@ -152,15 +148,15 @@ def test_mongo_config_username_password_both_or_neither(mongo_required_kwargs):
     kwargs = mongo_required_kwargs.copy()
 
     with removed_keys(kwargs, ['username']), pytest.raises(TraitError) as e:
-        MongoConfig(strict=True, **kwargs)
+        MongoConfig(**kwargs)
     assert str(e.value) == "Password supplied without username."
 
     with removed_keys(kwargs, ['password']), pytest.raises(TraitError) as e:
-        MongoConfig(strict=True, **kwargs)
+        MongoConfig(**kwargs)
     assert str(e.value) == "Username 'user' supplied without password."
 
     with removed_keys(kwargs, ['username', 'password']):
-        cfg = MongoConfig(strict=True, **kwargs)
+        cfg = MongoConfig(**kwargs)
 
         check_attributes(
             cfg,

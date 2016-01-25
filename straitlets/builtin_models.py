@@ -4,7 +4,7 @@ Built-In Serializables
 from traitlets import TraitError, validate
 
 from .compat import urlparse
-from .serializable import Serializable
+from .serializable import StrictSerializable
 from .traits import Bool, Integer, List, Unicode
 
 
@@ -22,7 +22,7 @@ def join_filter_empty(sep, *elems):
     return sep.join(map(str, filter(bool, elems)))
 
 
-class PostgresConfig(Serializable):
+class PostgresConfig(StrictSerializable):
     """
     Configuration for a PostgreSQL connection.
     """
@@ -80,7 +80,7 @@ class PostgresConfig(Serializable):
         )
 
 
-class MongoConfig(Serializable):
+class MongoConfig(StrictSerializable):
     """
     Configuration for a MongoDB connection.
     """
