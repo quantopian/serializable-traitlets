@@ -3,7 +3,6 @@ serializable-traitlets
 ======================
 Serializable IPython Traitlets
 
-
 ``serializable-traitlets`` (imported as ``straitlets``) is a Python 2/3
 compatible library providing a restricted subset of the classes from `IPython
 Traitlets`_.  Within our restricted subset, we inherit all the benefits of
@@ -26,8 +25,8 @@ for traits.  If all traits of a ``Serializable`` class have examples (or
 default values) provided, then we can auto-generate an example for the parent
 class, and we can resursively generate examples for nested classes.
 
-Example Usage
--------------
+Usage
+-----
 
 **Basic Usage:**
 
