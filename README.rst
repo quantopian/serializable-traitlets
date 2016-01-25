@@ -86,4 +86,4 @@ Example Usage
 
 .. _`IPython Traitlets` : http://traitlets.readthedocs.org
 .. _`dynamic default generators` : http://traitlets.readthedocs.org/en/stable/using_traitlets.html#dynamic-default-values
-.. _`attribute cross-validation` : http://traitlets.readthedocs.org/en/stable/using_traitlets.html#callbacks-when-trait-attributes-change
+.. _`attribute observers/validators` : http://traitlets.readthedocs.org/en/stable/using_traitlets.html#callbacks-when-trait-attributes-change
