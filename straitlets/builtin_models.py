@@ -116,10 +116,10 @@ class MongoConfig(StrictSerializable):
     hosts = List(
         Unicode,
         minlen=1,
-        help="List of hosts in the replicaset",
-    )
-    port = Integer(
-        help="Port on which the primary is running"
+        help=(
+            "List of hosts in the replicaset.  "
+            "To specify a port, postfix with :{portnum}."
+        )
     )
     database = Unicode(help="Database Name")
     replicaset = Unicode(

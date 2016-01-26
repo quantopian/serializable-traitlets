@@ -36,6 +36,7 @@ def pg_optional_kwargs():
 def mongo_hosts_lists():
     yield ['web']
     yield ['web', 'scale']
+    yield ['web:10421', 'scale:10474']
 
 
 @pytest.fixture
@@ -53,7 +54,6 @@ def mongo_required_kwargs(mongo_hosts_lists):
     return {
         'username': 'user',
         'password': 'pass',
-        'port': 666,
         'hosts': mongo_hosts_lists,
         'database': "webscale",
     }
