@@ -27,7 +27,7 @@ def extras_require():
 def main():
     setup(
         name='straitlets',
-        version='0.2.0',
+        version='0.2.1',
         description="Serializable IPython Traitlets",
         author="Quantopian Team",
         author_email="opensource@quantopian.com",
