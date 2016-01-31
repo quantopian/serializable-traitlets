@@ -28,10 +28,12 @@ def check_attributes(obj, attrs):
         assert getattr(obj, key) == value
 
 
-def assert_serializables_equal(left, right):
+def assert_serializables_equal(left, right, skip=()):
     assert type(left) == type(right)
     assert set(left.trait_names()) == set(right.trait_names())
     for name in left.trait_names():
+        if name in skip:
+            continue
         left_attr = getattr(left, name)
         right_attr = getattr(right, name)
         assert type(left_attr) == type(right_attr)

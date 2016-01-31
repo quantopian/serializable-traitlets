@@ -10,5 +10,5 @@ def test_base_case():
         to_primitive(SomeRandomClass())
 
     assert str(e.value) == (
-        "Don't know how to instances of SomeRandomClass to primitives."
+        "Don't know how to convert instances of SomeRandomClass to primitives."
     )
