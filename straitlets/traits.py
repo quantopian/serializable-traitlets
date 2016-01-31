@@ -130,12 +130,7 @@ class List(SerializableTrait, _ContainerMixin, tr.List):
 
 
 class Dict(SerializableTrait, _ContainerMixin, tr.Dict):
-    # For reasons I don't understand, the base Dict constructor intercepts a
-    # default value of Undefined and replaces it with {}.  If None is passed to
-    # the Dict constructor, then we get the desired behavior of barfing unless
-    # a default is explicitly provided.
-    def __init__(self, default_value=None, **kwargs):
-        super(Dict, self).__init__(default_value=default_value, **kwargs)
+    pass
 
 
 class Tuple(SerializableTrait, _ContainerMixin, tr.Tuple):
