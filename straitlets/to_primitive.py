@@ -8,7 +8,9 @@ from straitlets.dispatch import singledispatch
 @singledispatch
 def to_primitive(obj):
     raise TypeError(
-        "Don't know how to instances of %s to primitives." % type(obj).__name__
+        "Don't know how to convert instances of %s to primitives." % (
+            type(obj).__name__
+        )
     )
 
 _base_handler = to_primitive.dispatch(object)
@@ -25,6 +27,7 @@ def can_convert_to_primitive(type_):
 @to_primitive.register(long)  # Redundant in PY3, but that's fine.
 @to_primitive.register(float)
 @to_primitive.register(unicode)
+@to_primitive.register(bytes)
 @to_primitive.register(type(None))
 def _atom_to_primitive(a):
     return a

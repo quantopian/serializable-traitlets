@@ -108,15 +108,19 @@ class Serializable(with_metaclass(SerializableMeta, HasTraits)):
         )
 
     @classmethod
-    def example_instance(cls):
+    def example_instance(cls, skip=()):
         """
         Generate an example instance of a Serializable subclass.
 
         If traits have been tagged with an `example` value, then we use that
         value.  Otherwise we fall back the default_value for the instance.
+
+        Traits with names in ``skip`` will not have example values set.
         """
         kwargs = {}
         for name, trait in iteritems(cls.class_traits()):
+            if name in skip:
+                continue
             value = trait.example_value
             if value is Undefined:
                 continue
@@ -125,30 +129,31 @@ class Serializable(with_metaclass(SerializableMeta, HasTraits)):
         return cls(**kwargs)
 
     @classmethod
-    def example_yaml(cls):
+    def example_yaml(cls, skip=()):
         """
         Generate an example yaml string for a Serializable subclass.
 
         If traits have been tagged with an `example` value, then we use that
         value.  Otherwise we fall back the default_value for the instance.
         """
-        return cls.example_instance().to_yaml()
+        return cls.example_instance(skip=skip).to_yaml(skip=skip)
 
     @classmethod
-    def write_example_yaml(cls, dest):
+    def write_example_yaml(cls, dest, skip=()):
         """
         Write a file containing an example yaml string for a Serializable
         subclass.
         """
         # Make sure we can make an instance before we open a file.
-        inst = cls.example_instance()
+        inst = cls.example_instance(skip=skip)
         with open(dest, 'w') as f:
-            inst.to_yaml(stream=f)
+            inst.to_yaml(stream=f, skip=skip)
 
-    def to_dict(self):
+    def to_dict(self, skip=()):
         out_dict = {}
         for key in self.trait_names():
-            # Don't serialize the `strict` traitlet.
+            if key in skip:
+                continue
             out_dict[key] = to_primitive(getattr(self, key))
         return out_dict
 
@@ -156,16 +161,16 @@ class Serializable(with_metaclass(SerializableMeta, HasTraits)):
     def from_dict(cls, dict_):
         return cls(**dict_)
 
-    def to_json(self):
-        return json.dumps(self.to_dict())
+    def to_json(self, skip=()):
+        return json.dumps(self.to_dict(skip=skip))
 
     @classmethod
     def from_json(cls, s):
         return cls.from_dict(json.loads(s))
 
-    def to_yaml(self, stream=None):
+    def to_yaml(self, stream=None, skip=()):
         return yaml.safe_dump(
-            self.to_dict(),
+            self.to_dict(skip=skip),
             stream=stream,
             default_flow_style=False,
         )
@@ -186,11 +191,16 @@ class Serializable(with_metaclass(SerializableMeta, HasTraits)):
         """
         return cls.from_json(ensure_unicode(base64.b64decode(s)))
 
-    def to_base64(self):
+    def to_base64(self, skip=()):
         """
         Construct from base64-encoded JSON.
         """
-        return base64.b64encode(ensure_bytes(self.to_json(), encoding='utf-8'))
+        return base64.b64encode(
+            ensure_bytes(
+                self.to_json(skip=skip),
+                encoding='utf-8',
+            )
+        )
 
     @classmethod
     def from_environ(cls, environ):
@@ -205,7 +215,7 @@ class Serializable(with_metaclass(SerializableMeta, HasTraits)):
         """
         return cls.from_base64(environ[cls.__name__])
 
-    def to_environ(self, environ):
+    def to_environ(self, environ, skip=()):
         """
         Serialize and write self to environ[self._envvar].
 
@@ -215,7 +225,7 @@ class Serializable(with_metaclass(SerializableMeta, HasTraits)):
             Dict-like object (e.g. os.environ) into which to write ``self``.
         """
         environ[ensure_unicode(type(self).__name__)] = (
-            ensure_unicode(self.to_base64())
+            ensure_unicode(self.to_base64(skip=skip))
         )
 
 

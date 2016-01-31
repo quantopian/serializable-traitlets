@@ -7,18 +7,15 @@ from textwrap import dedent
 import pytest
 from yaml import safe_load
 
+from traitlets import TraitError
+
 from straitlets.serializable import Serializable
-from straitlets.test_utils import assert_serializables_equal
+from straitlets.test_utils import assert_serializables_equal, multifixture
 from straitlets.traits import (
     Bool,
     Dict,
-    Enum,
-    Float,
     Instance,
     Integer,
-    List,
-    Set,
-    Tuple,
     Unicode,
 )
 
@@ -104,6 +101,18 @@ def expected_yaml():
     )
 
 
+@multifixture
+def skip_names():
+    yield ()
+    yield ('bool_tag',)
+    yield ('bool_tag', 'int_tag')
+    yield ('dict_tag', 'instance_tag', 'instance_neither')
+    yield [
+        name for name in ExampleClass.class_trait_names()
+        if name.endswith('tag')
+    ]
+
+
 def test_example_instance(expected_yaml, expected_instance):
     instance = ExampleClass.example_instance()
 
@@ -113,15 +122,30 @@ def test_example_instance(expected_yaml, expected_instance):
     assert ExampleClass.example_yaml() == expected_instance.to_yaml()
 
 
-def test_write_example_yaml(tmpdir, expected_instance):
+def test_example_skip_names(expected_instance, skip_names):
+    instance = ExampleClass.example_instance(skip=skip_names)
+    assert_serializables_equal(instance, expected_instance, skip=skip_names)
+
+    for name in skip_names:
+        with pytest.raises(TraitError):
+            getattr(instance, name)
+
+
+def test_write_example_yaml(tmpdir, expected_instance, skip_names):
 
     path = tmpdir.join("test.yaml").strpath
-    ExampleClass.write_example_yaml(path)
+    ExampleClass.write_example_yaml(path, skip=skip_names)
 
+    from_file = ExampleClass.from_yaml_file(path)
     assert_serializables_equal(
-        ExampleClass.from_yaml_file(path),
+        from_file,
         expected_instance,
+        skip=skip_names,
     )
+
+    for name in skip_names:
+        with pytest.raises(TraitError):
+            getattr(from_file, name)
 
 
 def test_nested_example():

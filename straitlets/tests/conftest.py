@@ -2,33 +2,33 @@ import os
 from ..test_utils import multifixture
 
 
-def _roundtrip_to_dict(traited):
-    return type(traited).from_dict(traited.to_dict())
+def _roundtrip_to_dict(traited, skip=()):
+    return type(traited).from_dict(traited.to_dict(skip=skip))
 
 
-def _roundtrip_to_json(traited):
-    return type(traited).from_json(traited.to_json())
+def _roundtrip_to_json(traited, skip=()):
+    return type(traited).from_json(traited.to_json(skip=skip))
 
 
-def _roundtrip_to_yaml(traited):
-    return type(traited).from_yaml(traited.to_yaml())
+def _roundtrip_to_yaml(traited, skip=()):
+    return type(traited).from_yaml(traited.to_yaml(skip=skip))
 
 
-def _roundtrip_to_base64(traited):
-    return type(traited).from_base64(traited.to_base64())
+def _roundtrip_to_base64(traited, skip=()):
+    return type(traited).from_base64(traited.to_base64(skip=skip))
 
 
-def _roundtrip_to_environ_dict(traited):
+def _roundtrip_to_environ_dict(traited, skip=()):
     environ = {}
-    traited.to_environ(environ)
+    traited.to_environ(environ, skip=skip)
     return type(traited).from_environ(environ)
 
 
-def _roundtrip_to_os_environ(traited):
+def _roundtrip_to_os_environ(traited, skip=()):
     environ = os.environ
     orig = dict(environ)
 
-    traited.to_environ(environ)
+    traited.to_environ(environ, skip=skip)
     try:
         return type(traited).from_environ(environ)
     finally:

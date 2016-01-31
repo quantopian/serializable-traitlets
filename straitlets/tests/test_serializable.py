@@ -67,17 +67,29 @@ def foo_kwargs():
         }
 
 
+@multifixture
+def skip_names():
+    yield ()
+    yield ('enum', 'unicode_', 'int_', 'float_', 'bool_')
+    yield ('dict_', 'list_', 'set_', 'tuple_')
+    yield Foo.class_trait_names()
+
+
 def test_construct_from_kwargs(foo_kwargs):
     instance = Foo(**foo_kwargs)
     check_attributes(instance, foo_kwargs)
 
 
-def test_roundtrip(foo_kwargs, roundtrip_func):
+def test_roundtrip(foo_kwargs, roundtrip_func, skip_names):
     foo = Foo(**foo_kwargs)
-    roundtripped = roundtrip_func(foo)
+    roundtripped = roundtrip_func(foo, skip=skip_names)
     assert isinstance(roundtripped, Foo)
     assert foo is not roundtripped
-    assert_serializables_equal(roundtripped, foo)
+    assert_serializables_equal(roundtripped, foo, skip=skip_names)
+
+    for name in skip_names:
+        with pytest.raises(TraitError):
+            getattr(roundtripped, name)
 
 
 class DynamicDefaults(Serializable):
