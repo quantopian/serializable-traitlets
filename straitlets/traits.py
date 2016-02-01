@@ -7,11 +7,30 @@ Adds the following additional behavior:
 - Serialization to/from dictionaries containing only primitives.
 - More strict handling of default values than traitlets' built-in behavior.
 """
+from contextlib import contextmanager
 import inspect
 
 import traitlets as tr
 
 from .to_primitive import to_primitive, can_convert_to_primitive
+
+
+@contextmanager
+def cross_validation_lock(obj):
+    """
+    A contextmanager for holding Traited object's cross-validators.
+
+    This should be used in circumstances where you want to call _validate, but
+    don't want to fire cross-validators.
+    """
+    # TODO: Replace this with usage of public API when
+    # https://github.com/ipython/traitlets/pull/166 lands upstream.
+    orig = getattr(obj, '_cross_validation_lock', False)
+    try:
+        obj._cross_validation_lock = True
+        yield
+    finally:
+        obj._cross_validation_lock = orig
 
 
 class SerializableTrait(tr.TraitType):
@@ -29,7 +48,8 @@ class SerializableTrait(tr.TraitType):
         # example.
         example = self._static_example_value()
         if example is not tr.Undefined:
-            self._validate(obj, example)
+            with cross_validation_lock(obj):
+                self._validate(obj, example)
 
     def _static_example_value(self):
         return self.metadata.get('example', self.default_value)
