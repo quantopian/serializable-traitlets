@@ -17,6 +17,7 @@ from straitlets.test_utils import (
 from ..serializable import Serializable, StrictSerializable
 from ..traits import (
     Bool,
+    Bytes,
     Dict,
     Enum,
     Float,
@@ -38,6 +39,7 @@ class Foo(Serializable):
     float_ = Float()
     int_ = Integer()
     unicode_ = Unicode()
+    bytes_ = Bytes()
     enum = Enum(values=(1, 2, not_ascii))
 
     dict_ = Dict()
@@ -55,6 +57,7 @@ def foo_kwargs():
             'float_': float(seed),
             'int_': int(seed),
             'unicode_': unicode(seed),
+            'bytes_': unicode(seed).encode('utf-8'),
             'enum': seed,
 
             'dict_': {
@@ -70,7 +73,7 @@ def foo_kwargs():
 @multifixture
 def skip_names():
     yield ()
-    yield ('enum', 'unicode_', 'int_', 'float_', 'bool_')
+    yield ('enum', 'unicode_', 'int_', 'float_', 'bool_', 'bytes_')
     yield ('dict_', 'list_', 'set_', 'tuple_')
     yield Foo.class_trait_names()
 
@@ -155,6 +158,7 @@ def foo_instance():
         float_=5.0,
         int_=2,
         enum=1,
+        bytes_=b"foo",
         unicode_="foo",
         dict_={"foo": "foo"},
         list_=["foo"],
@@ -171,6 +175,7 @@ def different_foo_instance():
         int_=3,
         enum=2,
         unicode_=not_ascii,
+        bytes_=not_ascii.encode('utf-8'),
         dict_={not_ascii: not_ascii},
         list_=["not_foo", not_ascii, 3],
         set_={"not_foo", not_ascii},
@@ -316,6 +321,7 @@ def foo_yaml():
         float_: 1.0
         int_: 2
         unicode_: {not_ascii}
+        bytes_: bytes
         enum: {not_ascii}
         dict_:
             a: 3
@@ -343,6 +349,7 @@ def foo_yaml_expected_result():
         float_=1.0,
         int_=2,
         unicode_=not_ascii,
+        bytes_='bytes',
         enum=not_ascii,
         dict_=dict(
             a=3,

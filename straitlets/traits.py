@@ -12,6 +12,7 @@ import inspect
 
 import traitlets as tr
 
+from .compat import ensure_bytes
 from .to_primitive import to_primitive, can_convert_to_primitive
 
 
@@ -71,6 +72,18 @@ class Unicode(SerializableTrait, tr.Unicode):
 
 class Bool(SerializableTrait, tr.Bool):
     pass
+
+
+class Bytes(SerializableTrait, tr.Bytes):
+
+    def validate(self, obj, value):
+        """
+        Coerce unicode strings into bytes.
+        """
+        return super(Bytes, self).validate(
+            obj,
+            ensure_bytes(value, encoding='utf-8'),
+        )
 
 
 # Different traitlets container types use different values for `default_value`.
