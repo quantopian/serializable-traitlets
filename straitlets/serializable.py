@@ -244,5 +244,5 @@ class StrictSerializable(Serializable):
     """
 
     def __init__(self, **metadata):
-        super(Serializable, self).__init__(**metadata)
+        super(StrictSerializable, self).__init__(**metadata)
         self.validate_all_attributes()
