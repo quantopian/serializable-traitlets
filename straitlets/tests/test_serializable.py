@@ -468,5 +468,8 @@ def test_strict_serializable():
     with pytest.raises(TraitError):
         Strict.from_dict({})
 
+    with pytest.raises(TypeError):
+        Strict(x=1, y=2)
+
     assert Strict(x=1).x == 1
     assert Strict(x=1).to_dict() == {"x": 1}
