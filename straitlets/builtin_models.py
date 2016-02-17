@@ -1,11 +1,11 @@
 """
 Built-In Serializables
 """
+from six.moves.urllib.parse import urlencode, urlparse
 from traitlets import TraitError, validate
 
-from .compat import urlparse
 from .serializable import StrictSerializable
-from .traits import Bool, Integer, List, Unicode
+from .traits import Bool, Integer, List, Unicode, Dict
 
 
 def join_filter_empty(sep, *elems):
@@ -14,12 +14,12 @@ def join_filter_empty(sep, *elems):
 
     Example
     -------
-    >>> join_if_second_nonempty(':', 'a', None, 'c')
+    >>> join_filter_empty(':', 'a', None, 'c')
     'a:c'
-    >>> join_if_second_nonempty(':', 'a', None)
+    >>> join_filter_empty(':', 'a', None)
     'a'
     """
-    return sep.join(map(str, filter(bool, elems)))
+    return sep.join(map(str, filter(None, elems)))
 
 
 class PostgresConfig(StrictSerializable):
@@ -58,11 +58,20 @@ class PostgresConfig(StrictSerializable):
         host_port = join_filter_empty(':', self.hostname, self.port)
         return '@'.join([user_pass, host_port])
 
+    query_params = Dict(
+        default_value={},
+        help="Connection parameters",
+    )
+
     @property
     def url(self):
-        return "postgresql://{netloc}/{db}".format(
-            netloc=self.netloc,
-            db=self.database,
+        return join_filter_empty(
+            '?',
+            "postgresql://{netloc}/{db}".format(
+                netloc=self.netloc,
+                db=self.database,
+            ),
+            urlencode(self.query_params),
         )
 
     @classmethod
@@ -77,6 +86,10 @@ class PostgresConfig(StrictSerializable):
             hostname=parsed.hostname,
             port=parsed.port,
             database=parsed.path.lstrip('/'),
+            # Like parse_qs, but produces a scalar per key, instead of a list:
+            query_params=dict(param.split('=')
+                              for param in parsed.query.split('&'))
+            if parsed.query else {},
         )
 
 

@@ -10,6 +10,7 @@ from straitlets.test_utils import (
     check_attributes,
     multifixture,
     removed_keys,
+    assert_urls_equal,
 )
 
 from ..builtin_models import MongoConfig, PostgresConfig
@@ -29,6 +30,7 @@ def pg_optional_kwargs():
         'hostname': 'localhost',
         'port': 5432,
         'password': 'password',
+        'query_params': {'connect_timeout': '10', 'sslmode': 'require'},
     }
 
 
@@ -65,12 +67,14 @@ def test_postgres_config_required(pg_required_kwargs, roundtrip_func):
         cfg,
         merge(pg_required_kwargs, {'port': None, 'password': None}),
     )
-    assert cfg.url == "postgresql://user@/db"
+    assert_urls_equal(cfg.url, "postgresql://user@/db")
     rounded = roundtrip_func(cfg)
-    assert_serializables_equal(cfg, rounded)
-    assert rounded.url == cfg.url
+    assert_serializables_equal(cfg, rounded, skip=['url'])
+    assert_urls_equal(rounded.url, cfg.url)
 
-    assert_serializables_equal(cfg, PostgresConfig.from_url(cfg.url))
+    from_url = PostgresConfig.from_url(cfg.url)
+    assert_serializables_equal(cfg, from_url, skip=['url'])
+    assert_urls_equal(from_url.url, cfg.url)
 
 
 def test_postgres_config_optional(pg_required_kwargs,
@@ -79,13 +83,19 @@ def test_postgres_config_optional(pg_required_kwargs,
     kwargs = merge(pg_required_kwargs, pg_optional_kwargs)
     cfg = PostgresConfig(**kwargs)
     check_attributes(cfg, kwargs)
-    assert cfg.url == "postgresql://user:password@localhost:5432/db"
+
+    assert_urls_equal(
+        cfg.url,
+        "postgresql://user:password@localhost:5432/db?"
+        "connect_timeout=10&sslmode=require")
 
     rounded = roundtrip_func(cfg)
     assert_serializables_equal(cfg, rounded)
-    assert rounded.url == cfg.url
+    assert_urls_equal(rounded.url, cfg.url)
 
-    assert_serializables_equal(cfg, PostgresConfig.from_url(cfg.url))
+    from_url = PostgresConfig.from_url(cfg.url)
+    assert_serializables_equal(cfg, from_url, skip=['url'])
+    assert_urls_equal(from_url.url, cfg.url)
 
 
 def test_all_pg_kwargs_required(pg_required_kwargs):
@@ -93,7 +103,7 @@ def test_all_pg_kwargs_required(pg_required_kwargs):
     kwargs = pg_required_kwargs.copy()
     for key in kwargs:
         with removed_keys(kwargs, [key]), pytest.raises(TraitError) as e:
-            PostgresConfig(**kwargs).validate_all_attributes
+            PostgresConfig(**kwargs)
         assert str(e.value).startswith('No default value found for %s' % key)
 
 
