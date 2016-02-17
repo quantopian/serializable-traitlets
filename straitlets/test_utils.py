@@ -4,7 +4,8 @@ Testing utilities.
 from contextlib import contextmanager
 
 import pytest
-from six import iteritems
+from six import iteritems, string_types
+from six.moves.urllib.parse import parse_qs
 
 from .serializable import Serializable
 
@@ -41,6 +42,24 @@ def assert_serializables_equal(left, right, skip=()):
             assert_serializables_equal(left_attr, right_attr)
         else:
             assert left_attr == right_attr
+
+
+def assert_urls_equal(left, right):
+    assert isinstance(left, string_types)
+    assert isinstance(right, string_types)
+
+    left_parts = left.split('?', 1)
+    right_parts = right.split('?', 1)
+
+    left_url = left_parts[0]
+    right_url = right_parts[0]
+    assert left_url == right_url
+
+    left_params = left_parts[1:]
+    right_params = right_parts[1:]
+    assert len(left_params) == len(right_params)
+    if left_params:
+        assert parse_qs(left_params[0]) == parse_qs(right_params[0])
 
 
 @contextmanager
