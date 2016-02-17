@@ -125,7 +125,7 @@ class _ContainerMixin(object):
                     "_ContainerMixin applied to unknown type %s" % type(self)
                 )
 
-        return super(_ContainerMixin, self).__init__(
+        super(_ContainerMixin, self).__init__(
             default_value=default_value,
             **kwargs
         )

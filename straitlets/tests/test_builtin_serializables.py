@@ -103,7 +103,7 @@ def test_all_pg_kwargs_required(pg_required_kwargs):
     kwargs = pg_required_kwargs.copy()
     for key in kwargs:
         with removed_keys(kwargs, [key]), pytest.raises(TraitError) as e:
-            PostgresConfig(**kwargs).validate_all_attributes
+            PostgresConfig(**kwargs)
         assert str(e.value).startswith('No default value found for %s' % key)
 
 
