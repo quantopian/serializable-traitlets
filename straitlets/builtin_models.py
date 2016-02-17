@@ -14,9 +14,9 @@ def join_filter_empty(sep, *elems):
 
     Example
     -------
-    >>> join_if_second_nonempty(':', 'a', None, 'c')
+    >>> join_filter_empty(':', 'a', None, 'c')
     'a:c'
-    >>> join_if_second_nonempty(':', 'a', None)
+    >>> join_filter_empty(':', 'a', None)
     'a'
     """
     return sep.join(map(str, filter(bool, elems)))
