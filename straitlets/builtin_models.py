@@ -19,7 +19,7 @@ def join_filter_empty(sep, *elems):
     >>> join_filter_empty(':', 'a', None)
     'a'
     """
-    return sep.join(map(str, filter(bool, elems)))
+    return sep.join(map(str, filter(None, elems)))
 
 
 class PostgresConfig(StrictSerializable):
