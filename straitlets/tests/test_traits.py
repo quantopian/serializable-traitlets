@@ -1,6 +1,9 @@
 import pytest
 
-from ..traits import Enum
+import traitlets as tr
+
+from ..serializable import Serializable
+from ..traits import Enum, LengthBoundedUnicode
 
 
 def test_reject_unknown_enum_value():
@@ -19,3 +22,18 @@ def test_reject_unknown_enum_value():
     assert str(e.value) == (
         "Can't convert Enum value SomeRandomClass(x=3) to a primitive."
     )
+
+
+def test_length_bounded_unicode():
+
+    class F(Serializable):
+        u = LengthBoundedUnicode(minlen=5, maxlen=10)
+
+    for i in range(5, 11):
+        F(u=u'a' * i)
+
+    with pytest.raises(tr.TraitError):
+        F(u=u'a' * 4)
+
+    with pytest.raises(tr.TraitError):
+        F(u=u'a' * 11)

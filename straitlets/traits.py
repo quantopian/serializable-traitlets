@@ -69,6 +69,23 @@ class Unicode(SerializableTrait, tr.Unicode):
     pass
 
 
+class LengthBoundedUnicode(Unicode):
+
+    def __init__(self, minlen, maxlen, *args, **kwargs):
+        self.minlen = minlen
+        self.maxlen = maxlen
+        super(LengthBoundedUnicode, self).__init__(*args, **kwargs)
+
+    def validate(self, obj, value):
+        super_retval = super(LengthBoundedUnicode, self).validate(obj, value)
+        length = len(value)
+        if length < self.minlen:
+            raise tr.TraitError("len(%r) < minlen=%d" % (value, self.minlen))
+        elif length > self.maxlen:
+            raise tr.TraitError("len(%r) > maxlen=%d" % (value, self.maxlen))
+        return super_retval
+
+
 class Bool(SerializableTrait, tr.Bool):
     pass
 
