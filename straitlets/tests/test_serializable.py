@@ -4,8 +4,10 @@ Tests for serializable.py.
 """
 from __future__ import unicode_literals
 
-import pytest
+import re
 from textwrap import dedent
+
+import pytest
 from traitlets import TraitError, Unicode as base_Unicode
 
 from straitlets.compat import unicode
@@ -14,7 +16,11 @@ from straitlets.test_utils import (
     check_attributes,
     multifixture,
 )
-from ..serializable import Serializable, StrictSerializable
+from ..serializable import (
+    MultipleTraitErrors,
+    Serializable,
+    StrictSerializable,
+)
 from ..traits import (
     Bool,
     Dict,
@@ -454,7 +460,7 @@ def test_validate_all_attributes():
     with pytest.raises(TraitError) as touch_err:
         m.x
 
-    assert str(validate_err) == str(touch_err)
+    assert str(validate_err.value) == str(touch_err.value)
 
 
 def test_strict_serializable():
@@ -473,3 +479,27 @@ def test_strict_serializable():
 
     assert Strict(x=1).x == 1
     assert Strict(x=1).to_dict() == {"x": 1}
+
+
+class MultipleErrorsStrict(StrictSerializable):
+    """This is not defined in the body of a function because it breaks my regex!
+    """
+    x = Integer()
+    y = Integer()
+
+
+def test_multiple_trait_errors():
+
+    with pytest.raises(MultipleTraitErrors) as e:
+        MultipleErrorsStrict()
+
+    assert re.match(
+        dedent(
+            """\
+            ^
+            x: No default value found for x trait of <.+?>
+            --------------------
+            y: No default value found for y trait of <.+?>$"""
+        ),
+        str(e.value)
+    )

@@ -20,6 +20,7 @@ def extras_require():
             'pytest>=2.8.5',
             'pytest-cov>=1.8.1',
             'pytest-pep8>=1.0.6',
+            'click>=6.0',
         ],
     }
 

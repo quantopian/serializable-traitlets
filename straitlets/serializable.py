@@ -1,14 +1,16 @@
 """
 Defines a Serializable subclass for extended traitlets.
 """
-import json
 import base64
+import json
+from operator import itemgetter
 from textwrap import dedent
 import yaml
 
 from traitlets import (
     HasTraits,
     MetaHasTraits,
+    TraitError,
     TraitType,
     Undefined,
 )
@@ -47,6 +49,23 @@ _DID_YOU_MEAN_INSTANCE_TEMPLATE = dedent(
 )
 
 
+class MultipleTraitErrors(TraitError):
+    def __new__(cls, errors):
+        if len(errors) == 1:
+            # If only one error is passed, pass it through unmodified.
+            return list(errors.items())[0][1]
+        return super(MultipleTraitErrors, cls).__new__(cls, errors)
+
+    def __init__(self, errors):
+        self.errors = errors
+
+    def __str__(self):
+        return '\n' + ('\n%s\n' % ('-' * 20)).join(
+            ': '.join((name, str(e)))
+            for name, e in sorted(self.errors.items(), key=itemgetter(0))
+        )
+
+
 class Serializable(with_metaclass(SerializableMeta, HasTraits)):
     """
     Base class for HasTraits instances that can be serialized into Python
@@ -77,8 +96,14 @@ class Serializable(with_metaclass(SerializableMeta, HasTraits)):
         --------
         StrictSerializable
         """
+        errors = {}
         for name in self.trait_names():
-            getattr(self, name)
+            try:
+                getattr(self, name)
+            except TraitError as e:
+                errors[name] = e
+        if errors:
+            raise MultipleTraitErrors(errors)
 
     @classmethod
     def _unexpected_kwarg_msg(cls, unexpected):
