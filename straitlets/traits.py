@@ -187,7 +187,8 @@ class Enum(SerializableTrait, tr.Enum):
 
 class Instance(SerializableTrait, tr.Instance):
 
-    def init(self):
+    def __init__(self, *args, **kwargs):
+        super(Instance, self).__init__(*args, **kwargs)
         self._resolve_classes()
         if not can_convert_to_primitive(self.klass):
             raise TypeError(
@@ -195,7 +196,6 @@ class Instance(SerializableTrait, tr.Instance):
                     self.klass.__name__,
                 )
             )
-        super(Instance, self).init()
 
     def validate(self, obj, value):
         from .serializable import Serializable
