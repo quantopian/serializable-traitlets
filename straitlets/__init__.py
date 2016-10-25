@@ -1,4 +1,4 @@
-from .serializable import Serializable
+from .serializable import Serializable, StrictSerializable, MultipleTraitErrors
 from .traits import (
     Bool,
     Dict,
@@ -22,8 +22,10 @@ __all__ = (
     'Integer',
     'LengthBoundedUnicode',
     'List',
+    'MultipleTraitErrors',
     'Set',
     'Tuple',
     'Unicode',
     'Serializable',
+    'StrictSerializable',
 )
