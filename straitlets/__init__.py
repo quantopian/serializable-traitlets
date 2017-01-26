@@ -13,6 +13,9 @@ from .traits import (
     Unicode,
 )
 
+# remember to update setup.py!
+__version__ = '0.3.0'
+
 __all__ = (
     'Bool',
     'Dict',

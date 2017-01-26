@@ -28,7 +28,8 @@ def extras_require():
 def main():
     setup(
         name='straitlets',
-        version='0.2.7',
+        # remember to update straitlets/__init__.py!
+        version='0.3.0',
         description="Serializable IPython Traitlets",
         author="Quantopian Team",
         author_email="opensource@quantopian.com",
