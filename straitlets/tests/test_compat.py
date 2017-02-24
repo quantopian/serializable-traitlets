@@ -1,4 +1,6 @@
 # encoding: utf-8
+import sys
+
 import pytest
 
 from ..compat import ensure_bytes, ensure_unicode
@@ -26,3 +28,14 @@ def test_ensure_unicode():
 
     with pytest.raises(TypeError):
         ensure_unicode(1)
+
+
+@pytest.mark.skipif(
+    sys.version_info.major > 2,
+    reason='we can import straitlets.py3 in Python 3',
+)
+def test_py3_import_error():  # pragma: no cover
+    with pytest.raises(ImportError) as e:
+        import straitlets.py3  # noqa
+
+    assert str(e.value) == 'straitlets.py3 is only available in Python 3'

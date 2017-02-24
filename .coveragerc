@@ -1,0 +1,2 @@
+[run]
+omit = straitlets/py3.py

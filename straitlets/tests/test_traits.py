@@ -1,8 +1,10 @@
-import pytest
+import sys
 
+import pytest
 import traitlets as tr
 
 from ..serializable import Serializable
+from ..test_utils import assert_serializables_equal
 from ..traits import Enum, LengthBoundedUnicode
 
 
@@ -37,3 +39,23 @@ def test_length_bounded_unicode():
 
     with pytest.raises(tr.TraitError):
         F(u=u'a' * 11)
+
+
+@pytest.mark.skipif(
+    sys.version_info.major < 3,
+    reason='Path requires Python 3',
+)
+def test_path(roundtrip_func):  # pragma: no cover
+    # defer imports because these only work in Python 3
+    import pathlib
+    from ..py3 import Path
+
+    class S(Serializable):
+        p = Path()
+
+    s = S(p='/etc')
+
+    # ensure that the object stored at ``p`` is a ``pathlib.Path``
+    assert isinstance(s.p, pathlib.Path)
+
+    assert_serializables_equal(s, roundtrip_func(s))
