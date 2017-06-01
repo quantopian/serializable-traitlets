@@ -14,7 +14,7 @@ from .traits import (
 )
 
 # remember to update setup.py!
-__version__ = '0.3.0'
+__version__ = '0.3.1'
 
 __all__ = (
     'Bool',
