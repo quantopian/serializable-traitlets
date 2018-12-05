@@ -106,6 +106,7 @@ def _get_default_value_sentinel(t):
         "Can't find default value sentinel for type %s" % t
     )
 
+
 _NOTPASSED = object()
 _TRAITLETS_CONTAINER_TYPES = frozenset([tr.List, tr.Set, tr.Dict, tr.Tuple])
 _DEFAULT_VALUE_SENTINELS = {

@@ -109,7 +109,7 @@ class DynamicDefaults(Serializable):
     def _d_default(self):
         return self.DEFAULT_D
 
-    l = List()
+    l = List()  # noqa
     DEFAULT_L = [1, 2, not_ascii, 3]
 
     def _l_default(self):
