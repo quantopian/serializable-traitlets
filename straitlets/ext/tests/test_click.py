@@ -59,9 +59,7 @@ def missing_attr_instance():
 multi_error_output = re.compile(
     dedent(
         """\
-        ^Usage: main \[OPTIONS\]
-
-        Error: Invalid value for "--config": Failed to validate the schema:
+        Failed to validate the schema:
 
         bool:
           No default value found for bool trait of <.+?>
@@ -69,18 +67,16 @@ multi_error_output = re.compile(
           No default value found for int trait of <.+?>
         unicode:
           No default value found for unicode trait of <.+?>
-        $""",
+        """,
     ),
 )
 
 single_error_output = re.compile(
     dedent(
         """\
-        ^Usage: main \[OPTIONS\]
-
-        Error: Invalid value for "--config": Failed to validate the schema:
+        Failed to validate the schema:
           No default value found for int trait of <.+?>
-        $""",
+        """,
     ),
 )
 
@@ -128,7 +124,7 @@ def test_json_multiple_errors(runner):
             catch_exceptions=False,
         )
         assert result.exit_code
-        assert multi_error_output.match(result.output)
+        assert multi_error_output.search(result.output)
 
 
 def test_json_single_error(runner, missing_attr_instance):
@@ -148,7 +144,7 @@ def test_json_single_error(runner, missing_attr_instance):
             catch_exceptions=False,
         )
         assert result.exit_code
-        assert single_error_output.match(result.output)
+        assert single_error_output.search(result.output)
 
 
 def test_yaml_file(runner, expected_instance):
@@ -194,7 +190,7 @@ def test_yaml_multiple_errors(runner):
             catch_exceptions=False,
         )
         assert result.exit_code
-        assert multi_error_output.match(result.output)
+        assert multi_error_output.search(result.output)
 
 
 def test_yaml_single_error(runner, missing_attr_instance):
@@ -214,4 +210,4 @@ def test_yaml_single_error(runner, missing_attr_instance):
             catch_exceptions=False,
         )
         assert result.exit_code
-        assert single_error_output.match(result.output)
+        assert single_error_output.search(result.output)
