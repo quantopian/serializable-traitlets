@@ -127,7 +127,7 @@ class MongoConfig(StrictSerializable):
         return new
 
     hosts = List(
-        trait=Unicode,
+        trait=Unicode(),
         minlen=1,
         help=(
             "List of hosts in the replicaset.  "
