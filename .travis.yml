@@ -4,6 +4,15 @@ python:
   - "2.7"
   - "3.4"
   - "3.5"
+  - "3.6"
+
+# Python 3.7 requires OpenSSL 1.0.2+, which is only available on Travis
+# via xenial and sudo. Require them for only the build that needs them.
+matrix:
+  include:
+    - python: "3.7"
+      dist: xenial
+      sudo: true
 
 before_script:
   - pip install tox
@@ -12,3 +21,5 @@ script:
   - if [[ $TRAVIS_PYTHON_VERSION = '2.7' ]]; then tox -e py27; fi
   - if [[ $TRAVIS_PYTHON_VERSION = '3.4' ]]; then tox -e py34; fi
   - if [[ $TRAVIS_PYTHON_VERSION = '3.5' ]]; then tox -e py35; fi
+  - if [[ $TRAVIS_PYTHON_VERSION = '3.6' ]]; then tox -e py36; fi
+  - if [[ $TRAVIS_PYTHON_VERSION = '3.7' ]]; then tox -e py37; fi

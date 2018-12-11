@@ -1,9 +1,11 @@
 from six import PY3
 
 if PY3:  # pragma: no cover
+    from inspect import getfullargspec as argspec  # noqa
     long = int
     unicode = str
 else:    # pragma: no cover
+    from inspect import getargspec as argspec  # noqa
     long = long
     unicode = unicode
 
@@ -25,6 +27,7 @@ def ensure_unicode(s, encoding='utf-8'):
 
 
 __all__ = [
+    'argspec',
     'ensure_bytes',
     'ensure_unicode',
     'long',

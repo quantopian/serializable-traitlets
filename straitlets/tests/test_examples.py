@@ -152,14 +152,14 @@ def test_nested_example():
 
     class C(Serializable):
         point = Instance(Point)
-        unicode_ = Unicode(example='foo')
+        unicode_ = Unicode().tag(example='foo')
 
     class B(Serializable):
-        value = Integer(example=ord('b'))
+        value = Integer().tag(example=ord('b'))
         next_ = Instance(C)
 
     class A(Serializable):
-        value = Integer(example=ord('a'))
+        value = Integer().tag(example=ord('a'))
         next_ = Instance(B)
 
     expected = A(

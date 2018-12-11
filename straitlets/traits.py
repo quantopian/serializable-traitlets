@@ -8,10 +8,10 @@ Adds the following additional behavior:
 - More strict handling of default values than traitlets' built-in behavior.
 """
 from contextlib import contextmanager
-import inspect
 
 import traitlets as tr
 
+from . import compat
 from .to_primitive import to_primitive, can_convert_to_primitive
 
 
@@ -97,7 +97,7 @@ def _get_default_value_sentinel(t):
     # signature.
     if t is tr.Tuple:
         return tr.Undefined
-    argspec = inspect.getargspec(t.__init__)
+    argspec = compat.argspec(t.__init__)
     for name, value in zip(reversed(argspec.args), reversed(argspec.defaults)):
         if name == 'default_value':
             return value
@@ -105,6 +105,7 @@ def _get_default_value_sentinel(t):
     raise TypeError(  # pragma: nocover
         "Can't find default value sentinel for type %s" % t
     )
+
 
 _NOTPASSED = object()
 _TRAITLETS_CONTAINER_TYPES = frozenset([tr.List, tr.Set, tr.Dict, tr.Tuple])

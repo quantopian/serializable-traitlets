@@ -13,6 +13,7 @@ def to_primitive(obj):
         )
     )
 
+
 _base_handler = to_primitive.dispatch(object)
 
 
