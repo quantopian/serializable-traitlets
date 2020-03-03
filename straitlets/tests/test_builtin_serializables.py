@@ -48,6 +48,7 @@ def mongo_optional_kwargs():
         'slave_ok': False,
         'prefer_secondary': False,
         'ssl': False,
+        'ssl_ca_certs': '/path/to/ca_cert.pem'
     }
 
 
@@ -135,6 +136,7 @@ def test_mongo_config(mongo_required_kwargs,
         'slave_ok': True,
         'prefer_secondary': True,
         'ssl': False,
+        'ssl_ca_certs': None
     }
 
     without_optionals = MongoConfig(**mongo_required_kwargs)

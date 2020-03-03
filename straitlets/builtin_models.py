@@ -149,3 +149,8 @@ class MongoConfig(StrictSerializable):
         help="Prefer to connect to non-primary?",
     )
     ssl = Bool(default_value=False, help="Connect via SSL?")
+    ssl_ca_certs = Unicode(
+        allow_none=True,
+        default_value=None,
+        help="Path to concatenated CA certificates.",
+    )
