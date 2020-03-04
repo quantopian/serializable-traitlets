@@ -29,7 +29,7 @@ def main():
     setup(
         name='straitlets',
         # remember to update straitlets/__init__.py!
-        version='0.3.2',
+        version='0.3.3',
         description="Serializable IPython Traitlets",
         author="Quantopian Team",
         author_email="opensource@quantopian.com",
